@@ -24,16 +24,13 @@ def get_clear_data(data):
     clear_data = []
     regexp = re.compile(r'<.*?>')
     news_list = data['rss']['channel']['item']
-    if data['rss']['channel']['title'] == 'Новости Италия':
-        for news in news_list:
+    for news in news_list:
+        if isinstance(news['title'], str):
             clear_data += regexp.sub('', news['title'].strip()).split()
-        for news in news_list:
             clear_data += regexp.sub('', news['description'].strip()).split()
     else:
-        for news in news_list:
-            clear_data += regexp.sub('', news['title']['__cdata'].strip()).split()
-        for news in news_list:
-            clear_data += regexp.sub('', news['description']['__cdata'].strip()).split()
+        clear_data += regexp.sub('', news['title']['__cdata'].strip()).split()
+        clear_data += regexp.sub('', news['description']['__cdata'].strip()).split()
     return clear_data
 
 
