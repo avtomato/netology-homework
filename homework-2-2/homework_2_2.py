@@ -23,16 +23,17 @@ def get_clear_data(data):
     """
     clear_data = []
     regexp = re.compile(r'<.*?>')
+    news_list = data['rss']['channel']['item']
     if data['rss']['channel']['title'] == 'Новости Италия':
-        for i in range(len(data['rss']['channel']['item'])):
-            clear_data += regexp.sub('', data['rss']['channel']['item'][i]['title'].strip()).split()
-        for i in range(len(data['rss']['channel']['item'])):
-            clear_data += regexp.sub('', data['rss']['channel']['item'][i]['description'].strip()).split()
+        for news in news_list:
+            clear_data += regexp.sub('', news['title'].strip()).split()
+        for news in news_list:
+            clear_data += regexp.sub('', news['description'].strip()).split()
     else:
-        for i in range(len(data['rss']['channel']['item'])):
-            clear_data += regexp.sub('', data['rss']['channel']['item'][i]['title']['__cdata'].strip()).split()
-        for i in range(len(data['rss']['channel']['item'])):
-            clear_data += regexp.sub('', data['rss']['channel']['item'][i]['description']['__cdata'].strip()).split()
+        for news in news_list:
+            clear_data += regexp.sub('', news['title']['__cdata'].strip()).split()
+        for news in news_list:
+            clear_data += regexp.sub('', news['description']['__cdata'].strip()).split()
     return clear_data
 
 
