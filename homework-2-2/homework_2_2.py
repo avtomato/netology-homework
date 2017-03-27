@@ -58,4 +58,10 @@ def top_word(top_list):
         print("{0}. {1} ({2})".format(i+1, occurrence[0], occurrence[1]))
 
 
-top_word(get_words(get_clear_data(get_data('newsfr.json', 'iso-8859-5'))))
+def print_top():
+    top_word(get_words(get_clear_data(get_data('newsafr.json', 'utf-8'))))
+    top_word(get_words(get_clear_data(get_data('newscy.json', 'koi8-r'))))
+    top_word(get_words(get_clear_data(get_data('newsfr.json', 'iso-8859-5'))))
+    top_word(get_words(get_clear_data(get_data('newsit.json', 'cp1251'))))
+
+print_top()
