@@ -44,7 +44,7 @@ def get_words(cleardata):
     top_list = []
     big_data = [x.strip() for x in cleardata if len(x) > 6]
     word_list = Counter(big_data)
-    for i in sorted(word_list.items(), key=lambda x: x[1])[::-1]:
+    for i in sorted(word_list.items(), key=lambda x: x[1], reverse=True):
         top_list.append(i)
     return top_list
 
