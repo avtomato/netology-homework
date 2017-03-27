@@ -1,1 +1,1 @@
-netology python course
+[Netology python course](http://netology.ru/programs/python) 
