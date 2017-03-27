@@ -41,20 +41,20 @@ def get_words(cleardata):
     Отбираем из полученных данных слова длиной более 6 символов и считаем количество их вхождений в тексте.
     Возвращаем отсортированный по значениям словарь.
     """
-    top_word = []
+    top_list = []
     big_data = [x.strip() for x in cleardata if len(x) > 6]
     word_list = Counter(big_data)
     for i in sorted(word_list.items(), key=lambda x: x[1])[::-1]:
-        top_word.append(i)
-    return top_word
+        top_list.append(i)
+    return top_list
 
 
-def top_word(topword):
+def top_word(top_list):
     """
     Выводим пронумерованный Топ-10 самых часто встречающихся в новостях слов.
     """
     print('\n***Топ-10 самых часто встречающихся в новостях слов***')
-    for i, occurrence in enumerate(topword[:10]):
+    for i, occurrence in enumerate(top_list[:10]):
         print("{0}. {1} ({2})".format(i+1, occurrence[0], occurrence[1]))
 
 
