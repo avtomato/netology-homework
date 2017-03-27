@@ -19,7 +19,7 @@ def get_data(name, code):
 def get_clear_data(data):
     """
     Избавляемся от мусора в виде html тегов. Добавляем в список все слова, содержащиеся в заголовке и описании новости.
-    У файла newsit.json другой формат хранения данных, обрабатываем условие.
+    У файла newsit.json другая структура хранения данных, обрабатываем условие.
     """
     clear_data = []
     regexp = re.compile(r'<.*?>')
@@ -58,4 +58,4 @@ def top_word(topword):
         print("{0}. {1} ({2})".format(i+1, occurrence[0], occurrence[1]))
 
 
-top_word(get_words(get_clear_data(get_data('newsafr.json', 'utf-8'))))
+top_word(get_words(get_clear_data(get_data('newsfr.json', 'iso-8859-5'))))
