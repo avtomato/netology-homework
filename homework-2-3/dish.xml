@@ -1,0 +1,26 @@
+<dishes>
+    <dish>яичница</dish>
+        <consist>
+            <ingridient>яйца</ingridient>
+            <quanity>2</quanity>
+            <measure>шт</measure>
+            <ingridient>помидор</ingridient>
+            <quanity>100</quanity>
+            <measure>гр</measure>
+        </consist>
+    <dish>салат</dish>
+        <consist>
+            <ingridient>помидор</ingridient>
+            <quanity>100</quanity>
+            <measure>гр</measure>
+            <ingridient>огурец</ingridient>
+            <quanity>100</quanity>
+            <measure>гр</measure>
+            <ingridient>масло</ingridient>
+            <quanity>100</quanity>
+            <measure>мл</measure>
+            <ingridient>лук</ingridient>
+            <quanity>1</quanity>
+            <measure>шт</measure>
+        </consist>
+</dishes>
