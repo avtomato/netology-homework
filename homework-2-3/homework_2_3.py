@@ -14,9 +14,9 @@ def get_dish_txt():
                 k = line
                 cook_book[k] = []
             elif re.search(regexp2, line):
-                ingridient_name, quanity, measure = line.split(' | ')
+                ingridient, quanity, measure = line.split(' | ')
                 cook_book[k] += [
-                    {'ingridient_name': str(ingridient_name),
+                    {'ingridient': str(ingridient),
                      'quanity': int(quanity),
                      'measure': str(measure)}]
     return cook_book
@@ -44,23 +44,32 @@ def create_xml():
             if re.match(regexp1, line):
                 dish = ElementTree.SubElement(root, 'dish')
                 dish.text = line
-                consist = ElementTree.SubElement(root, 'consist')
             elif re.search(regexp2, line):
-                ingridient_name, quanity, measure = line.split(' | ')
-                module1 = ElementTree.SubElement(consist, 'ingridient')
-                module1.text = ingridient_name
-                module2 = ElementTree.SubElement(consist, 'quanity')
-                module2.text = quanity
-                module3 = ElementTree.SubElement(consist, 'measure')
-                module3.text = measure
-
+                ingridient, quanity, measure = line.split(' | ')
+                params = {'ingridient': ingridient, 'quanity': int(quanity), 'measure': measure}
+                content = ElementTree.SubElement(dish, 'content', attrib=params)
+                content.text = ''
         tree = ElementTree.ElementTree(root)
         tree.write('dish.xml', encoding='utf-8')
+
+
+def get_dish_xml():
+    tree = ElementTree.parse('dish.xml')
+    root = tree.getroot()
+    cook_book = {}
+    for dish in root.iter('dish'):
+        cook_book[dish.text.strip()] = []
+        for content in dish:
+            content.attrib['quanity'] = int(content.attrib['quanity'])
+            cook_book[dish.text.strip()].append(content.attrib)
+    return cook_book
 
 
 def get_shop_list_by_dishes(dishes, person_count, file):
     if 'txt' in file:
         cook_book = get_dish_txt()
+    if 'xml' in file:
+        cook_book = get_dish_xml()
     if 'json' in file:
         cook_book = get_dish_json()
     shop_list = {}
@@ -68,20 +77,20 @@ def get_shop_list_by_dishes(dishes, person_count, file):
         for ingridient in cook_book[dish]:
             new_shop_list_item = dict(ingridient)
             new_shop_list_item['quanity'] *= person_count
-            if new_shop_list_item['ingridient_name'] not in shop_list:
-                shop_list[new_shop_list_item['ingridient_name']] = new_shop_list_item
+            if new_shop_list_item['ingridient'] not in shop_list:
+                shop_list[new_shop_list_item['ingridient']] = new_shop_list_item
             else:
-                shop_list[new_shop_list_item['ingridient_name']]['quanity'] += new_shop_list_item['quanity']
+                shop_list[new_shop_list_item['ingridient']]['quanity'] += new_shop_list_item['quanity']
     return shop_list
 
 
 def print_shop_list(shop_list):
     for shop_list_item in shop_list.values():
-        print('{ingridient_name} {quanity} {measure}'.format(**shop_list_item))
+        print('{ingridient} {quanity} {measure}'.format(**shop_list_item))
 
 
 def create_shop_list():
-    file = input('Введите формат хранения данных (txt, json): ')
+    file = input('Введите формат хранения данных (txt, xml, json): ')
     person_count = int(input('Введите количество человек: '))
     dishes = input('Введите блюда в расчете на одного человека (через запятую): ').lower().split(', ')
     shop_list = get_shop_list_by_dishes(dishes, person_count, file)
