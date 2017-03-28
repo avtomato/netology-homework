@@ -1,5 +1,6 @@
 import re
 import json
+from xml.etree import ElementTree
 
 
 def get_dish_txt():
@@ -31,6 +32,30 @@ def get_dish_json():
     with open('dish.json', 'r', encoding='utf-8') as json_file:
         cook_book = json.load(json_file)
     return cook_book
+
+
+def create_xml():
+    with open('dish.txt', 'r', encoding='utf-8') as fr:
+        regexp1 = re.compile(r'\D+$')
+        regexp2 = re.compile(r'\|')
+        root = ElementTree.Element('dishes')
+        for line in fr:
+            line = line.lower().strip()
+            if re.match(regexp1, line):
+                dish = ElementTree.SubElement(root, 'dish')
+                dish.text = line
+                consist = ElementTree.SubElement(root, 'consist')
+            elif re.search(regexp2, line):
+                ingridient_name, quanity, measure = line.split(' | ')
+                module1 = ElementTree.SubElement(consist, 'ingridient')
+                module1.text = ingridient_name
+                module2 = ElementTree.SubElement(consist, 'quanity')
+                module2.text = quanity
+                module3 = ElementTree.SubElement(consist, 'measure')
+                module3.text = measure
+
+        tree = ElementTree.ElementTree(root)
+        tree.write('dish.xml', encoding='utf-8')
 
 
 def get_shop_list_by_dishes(dishes, person_count, file):
