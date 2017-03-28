@@ -1,0 +1,36 @@
+{
+  "яичница": [
+    {
+      "ingridient_name": "яйца",
+      "measure": "шт",
+      "quanity": 2
+    },
+    {
+      "ingridient_name": "помидор",
+      "measure": "гр",
+      "quanity": 100
+    }
+  ],
+  "салат": [
+    {
+      "ingridient_name": "помидор",
+      "measure": "гр",
+      "quanity": 100
+    },
+    {
+      "ingridient_name": "огурец",
+      "measure": "гр",
+      "quanity": 100
+    },
+    {
+      "ingridient_name": "масло",
+      "measure": "мл",
+      "quanity": 100
+    },
+    {
+      "ingridient_name": "лук",
+      "measure": "шт",
+      "quanity": 1
+    }
+  ]
+}
