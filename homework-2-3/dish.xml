@@ -1,26 +1,17 @@
 <dishes>
-    <dish>яичница</dish>
-        <consist>
-            <ingridient>яйца</ingridient>
-            <quanity>2</quanity>
-            <measure>шт</measure>
-            <ingridient>помидор</ingridient>
-            <quanity>100</quanity>
-            <measure>гр</measure>
-        </consist>
-    <dish>салат</dish>
-        <consist>
-            <ingridient>помидор</ingridient>
-            <quanity>100</quanity>
-            <measure>гр</measure>
-            <ingridient>огурец</ingridient>
-            <quanity>100</quanity>
-            <measure>гр</measure>
-            <ingridient>масло</ingridient>
-            <quanity>100</quanity>
-            <measure>мл</measure>
-            <ingridient>лук</ingridient>
-            <quanity>1</quanity>
-            <measure>шт</measure>
-        </consist>
-</dishes>
+    <dish>яичница
+        <content ingridient="яйца" measure="шт" quanity="2" />
+        <content ingridient="помидор" measure="гр" quanity="100" />
+    </dish>
+    <dish>салат
+        <content ingridient="помидор" measure="гр" quanity="100" />
+        <content ingridient="огурец" measure="гр" quanity="100" />
+        <content ingridient="масло" measure="мл" quanity="100" />
+        <content ingridient="лук" measure="шт" quanity="1" />
+    </dish>
+    <dish>стейк
+        <content ingridient="говядина" measure="гр" quanity="300" />
+        <content ingridient="масло" measure="мл" quanity="100" />
+        <content ingridient="специи" measure="гр" quanity="5" />
+    </dish>
+ </dishes>
