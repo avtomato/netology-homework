@@ -38,7 +38,7 @@ def to_translate(sourcefile, resultfile, lang, to_lang='ru'):
 # task2
 filelist = ['DE.txt', 'ES.txt', 'FR.txt']
 for i in filelist:
-    to_translate(i, 'translate2_{}'.format(i), '{}'.format(i.split('.')[0].lower()))
+    to_translate(i, 'translate_{}'.format(i), '{}'.format(i.split('.')[0].lower()))
 """
 if __name__ == '__main__':
     import sys
