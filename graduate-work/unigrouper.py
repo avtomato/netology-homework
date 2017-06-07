@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 s = requests.Session()
 
 
-class UserDeactivated(Exception):
+class VkError(Exception):
     pass
 
 
@@ -42,7 +42,7 @@ def make_request(url=None, params=None, timeout=None, **kwargs):
     sleep(0.4)
     r = s.get(url=url, params=params, timeout=timeout, **kwargs)
     if r.json().get('error'):
-        raise UserDeactivated('{}'.format(r.json().get('error').get('error_msg')))
+        raise VkError('{}'.format(r.json().get('error').get('error_msg')))
     else:
         return r.json()
 
@@ -72,12 +72,11 @@ def collector(friends):
             groups = response['response']['items']
             for group in groups:
                 collection[group].append(user)
-        except UserDeactivated:
+        except VkError:
             pass
         # progressbar
         sys.stdout.write('\rCompleted %d of %d friends (%.2f%%)' % (index, length, index / length * 100))
         sys.stdout.flush()
-    sys.stdout.write('\rCompleted\n')
     logger.info('collecting completed')
     return collection
 
@@ -139,8 +138,6 @@ def creator(groups):
         data.append(temp)
         # progressbar
         sys.stdout.write('\rCompleted %d of %d groups (%.2f%%)' % (index, length, index / length * 100))
-        sys.stdout.flush()
-    sys.stdout.write('\rCompleted\n')
     logger.info('creating completed')
     return data
 
