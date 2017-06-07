@@ -13,7 +13,7 @@ import json
 
 __title__ = "UniGrouper - finder of user's unique groups"
 __author__ = 'Maksim Vasyunin'
-__version__ = 'ver. 0.0.1'
+__version__ = 'ver. 0.0.2'
 __description__ = "Get a list of user's groups, that exclude user's friends"
 
 # Версия API
@@ -24,65 +24,71 @@ _TOKEN = 'd13e692be69592b09fd22c77a590dd34e186e6d696daa88d6d981e1b4e296b14acb377
 
 logger = logging.getLogger(__name__)
 
-
-# Получаем список id друзей пользователя
-def get_user_friends(params=None, **kwargs):
-    r = requests.get('https://api.vk.com/method/friends.get', params=params, **kwargs)
-    friends = r.json()['response']['items']
-    return friends
+s = requests.Session()
 
 
-# Получаем список id групп пользователя
-def get_user_groups(params=None, **kwargs):
-    r = requests.get('https://api.vk.com/method/groups.get', params=params, **kwargs)
-    groups = r.json()['response']['items']
-    return groups
+class VkError(Exception):
+    pass
 
 
-# Получаем информацию о заданном пользователе
-def get_info_user(params=None, **kwargs):
-    r = requests.get('https://api.vk.com/method/users.get', params=params, **kwargs)
-    user = r.json()['response'][0]
-    return user
+def make_request(url=None, params=None, timeout=None, **kwargs):
+    """With a specified time interval sends a GET request.
+
+    :param url: URL for the new :class:`Request` object.
+    :param params: (optional) Dictionary or bytes to be sent in the query string for the :class:`Request`.
+    :param timeout: (optional) How long to wait for the server to send data
+    :rtype: dict
+    """
+    sleep(0.4)
+    r = s.get(url=url, params=params, timeout=timeout, **kwargs)
+    if r.json().get('error'):
+        raise VkError('{}'.format(r.json().get('error').get('error_msg')))
+    else:
+        return r.json()
 
 
-# Получаем информацию о заданном сообществе
-def get_info_group(params=None, **kwargs):
-    r = requests.get('https://api.vk.com/method/groups.getById', params=params, **kwargs)
-    info = r.json()['response'][0]
-    return info
-
-
-# Получаем словарь где ключом является id группы, а значением список id друзей состоящих в ней
 def collector(friends):
+    """ Get dictionary, where the key is the group id, and the value of the list of id users included in it
+
+    :param friends: List user's friends
+    :rtype: dict
+    """
     length = len(friends)
     collection = defaultdict(list)
     logger.info('collecting started')
+    url = 'https://api.vk.com/method/groups.get'
     for index, user in enumerate(friends, start=1):
-        # ловим исключения в случае если страница была удалена или заблокирована
+        # ловим исключения в случае если страница пользователя была удалена или заблокирована
         try:
-            groups = get_user_groups(
-                {'user_id': user,
-                 'v': _VERSION,
-                 'access_token': _TOKEN
-                 }
+            response = make_request(
+                url=url,
+                timeout=13,
+                params={
+                    'user_id': user,
+                    'v': _VERSION,
+                    'access_token': _TOKEN
+                }
             )
+            groups = response['response']['items']
             for group in groups:
                 collection[group].append(user)
-        except KeyError:
+        except VkError:
             pass
         # progressbar
         sys.stdout.write('\rCompleted %d of %d friends (%.2f%%)' % (index, length, index / length * 100))
         sys.stdout.flush()
-        # тайм-аут между запросами (число запросов не должно превышать трех в секунду)
-        sleep(1)
-    sys.stdout.write('\rCompleted\n')
     logger.info('collecting completed')
     return collection
 
 
-# Выбираем уникальные группы для пользователя или указанного количества друзей
 def selector(user_group_list, collection, n=None):
+    """Get a set of user's groups, that exclude user's friends
+
+    :param user_group_list: List user's groups
+    :param collection: Dictionary, where the key is the group id, and the value of the list of id users included in it
+    :param n: Allowable number of user's friends in group (default 0)
+    :rtype: set
+    """
     user_groups = set(user_group_list)
     friend_groups = set()
     if n is None:
@@ -98,41 +104,50 @@ def selector(user_group_list, collection, n=None):
         return user_groups
 
 
-# Формируем необходимые данные для выбраных id групп
 def creator(groups):
+    """Get the necessary data for selected unique id groups
+
+    :param groups: Set of unique user's groups
+    :rtype: dict
+    """
     length = len(groups)
     data = list()
     logger.info('creating started')
+    url = 'https://api.vk.com/method/groups.getById'
     for index, group in enumerate(groups, start=1):
-        # ловим исключения в случае если страница была удалена или заблокирована
-        try:
-            info = get_info_group(
-                {'group_id': group,
-                 'fields': 'members_count',
-                 'v': _VERSION,
-                 'access_token': _TOKEN,
-                 }
-            )
-            # сохраняем порядок ключей в соответствии с указанным в примере
-            temp = OrderedDict()
-            temp['name'] = info['name']
-            temp['gid'] = info['id']
-            temp['members_count'] = info['members_count']
-            data.append(temp)
-        except KeyError:
-            pass
+        response = make_request(
+            url=url,
+            timeout=13,
+            params={
+                'group_id': group,
+                'fields': 'members_count',
+                'v': _VERSION,
+                'access_token': _TOKEN
+            }
+        )
+        # Заблокированные страницы групп пропускаем, api не отдает их members_count
+        if 'deactivated' in response['response'][0]:
+            continue
+        info = response['response'][0]
+        # сохраняем порядок ключей в соответствии с указанным в примере
+        temp = OrderedDict({
+            'name': info['name'],
+            'gid': info['id'],
+            'members_count': info['members_count']
+        })
+        data.append(temp)
         # progressbar
         sys.stdout.write('\rCompleted %d of %d groups (%.2f%%)' % (index, length, index / length * 100))
-        sys.stdout.flush()
-        # тайм-аут между запросами (число запросов не должно превышать трех в секунду)
-        sleep(1)
-    sys.stdout.write('\rCompleted\n')
     logger.info('creating completed')
     return data
 
 
-# Записываем полученный список в json file.
 def write_json(data, save_path):
+    """Write the data to a json file
+
+    :param data: Dictionary, with data from unique groups
+    :param save_path: Path to directory where to save files (default current work directory)
+    """
     filename = 'groups.json'
     filename = os.path.join(save_path, filename)
     # ловим исключение если отсутствуют права на запись или нет файла/директории
@@ -148,8 +163,11 @@ def write_json(data, save_path):
         sys.stdout.write('%s' % e)
 
 
-# Получаем аргументы командной строки
 def get_args():
+    """Get command-line arguments
+
+    :rtype: <class 'argparse.Namespace'>
+    """
     parser = argparse.ArgumentParser(
         prog=__title__,
         description=__description__
@@ -170,7 +188,7 @@ def get_args():
         '-p', '--save-path',
         dest='path',
         default='.',
-        help='path to directory where to save files'
+        help='path to directory where to save files (default current work directory)'
     )
     parser.add_argument(
         '--debug', action='store_true',
@@ -192,7 +210,7 @@ def main():
 
     if args.version:
         print('{} | {}'.format(__title__, __version__))
-        raise SystemExit
+        sys.exit()
 
     if args.debug:
         log_level = logging.DEBUG
@@ -210,13 +228,16 @@ def main():
 
     # Получаем id пользователя в случае если в аргументе передано короткое имя
     user = args.user
-    user_info = get_info_user(
-        {
+    url = 'https://api.vk.com/method/users.get'
+    response = make_request(
+        url=url,
+        params={
             'user_ids': user,
             'v': _VERSION,
             'access_token': _TOKEN
         }
     )
+    user_info = response['response'][0]
     user_id = user_info['id']
     # Количество друзей, по умолчанию нет
     n = args.numbers
@@ -227,8 +248,14 @@ def main():
 
     # Не вываливаемся при Ctrl+C :)
     try:
-        friends_list = get_user_friends(params)
-        user_groups_list = get_user_groups(params)
+        friends_list = make_request(
+            url='https://api.vk.com/method/friends.get',
+            params=params
+        )['response']['items']
+        user_groups_list = make_request(
+            url='https://api.vk.com/method/groups.get',
+            params=params
+        )['response']['items']
         collection = collector(friends_list)
         unique = selector(user_groups_list, collection, n)
         data = creator(unique)
